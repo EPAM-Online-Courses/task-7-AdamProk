@@ -2,10 +2,13 @@ package efs.task.reflection;
 
 import java.lang.annotation.Annotation;
 import java.util.Collection;
-import java.util.Collections;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Set;
+import java.util.HashSet;
 
 public class ClassInspector {
-
   /**
    * Metoda powinna wyszukać we wszystkich zadeklarowanych przez klasę polach te które oznaczone
    * są adnotacją podaną jako drugi parametr wywołania tej metody. Wynik powinien zawierać tylko
@@ -15,10 +18,15 @@ public class ClassInspector {
    * @param annotation szukana adnotacja
    * @return lista zawierająca tylko unikalne nazwy pól oznaczonych adnotacją
    */
-  public static Collection<String> getAnnotatedFields(final Class<?> type,
-      final Class<? extends Annotation> annotation) {
+  public static Collection<String> getAnnotatedFields(final Class<?> type, final Class<? extends Annotation> annotation) {
     //TODO usuń zawartość tej metody i umieść tutaj swoje rozwiązanie
-    return Collections.emptyList();
+    Set<String> annotatedFields = new HashSet<>();
+    for (Field field : type.getDeclaredFields()) {
+      if (field.isAnnotationPresent(annotation)) {
+        annotatedFields.add(field.getName());
+      }
+    }
+    return annotatedFields;
   }
 
   /**
@@ -32,7 +40,17 @@ public class ClassInspector {
    */
   public static Collection<String> getAllDeclaredMethods(final Class<?> type) {
     //TODO usuń zawartość tej metody i umieść tutaj swoje rozwiązanie
-    return Collections.emptyList();
+    Set<String> declaredMethods = new HashSet<>();
+    for (Method method : type.getDeclaredMethods()) {
+      declaredMethods.add(method.getName());
+    }
+    Class<?>[] interfaces = type.getInterfaces();
+    for (Class<?> iface : interfaces) {
+      for (Method method : iface.getMethods()) {
+        declaredMethods.add(method.getName());
+      }
+    }
+    return declaredMethods;
   }
 
   /**
@@ -51,6 +69,11 @@ public class ClassInspector {
    */
   public static <T> T createInstance(final Class<T> type, final Object... args) throws Exception {
     //TODO usuń zawartość tej metody i umieść tutaj swoje rozwiązanie
-    return null;
+    Class<?>[] classes = new Class[args.length];
+    for (int i = 0; i < args.length; i++)
+      classes[i] = args[i].getClass();
+    Constructor<T> constructor = type.getDeclaredConstructor(classes);
+    constructor.setAccessible(true);
+    return type.cast(constructor.newInstance(args));
   }
 }
